@@ -1,0 +1,37 @@
+header{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#game-container {
+    margin: 80px 100px 80px 100px;
+    padding: 20px;
+    border: 1mm solid black;
+    
+}
+
+#intro-container {
+    text-align: center;
+}
+
+.quiz-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.quiz-container h2 {
+    text-align: center;
+}
+
+.answer-button {
+    padding: 10px;
+    margin: 10px;
+}
+.answers-container{
+    display: flex;
+    flex-flow: column wrap;
+
+}
