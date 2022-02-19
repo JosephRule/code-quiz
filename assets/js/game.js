@@ -10,6 +10,17 @@ var questions = [
         {answerText:"this answer is correct",
             isCorrect: true}]
     },
+    {questionText: "this is question #1",
+    answers: [
+       {answerText:"this answer is incorrect",
+           isCorrect: false},
+       {answerText:"this answer is also incorrect",
+           isCorrect: false},
+       {answerText:"this answer too is incorrect",
+           isCorrect: false},
+       {answerText:"this answer is correct",
+           isCorrect: true}]
+   },
     {questionText: "What color is pongo?",
         answers: [
            {answerText:"purple",
@@ -23,7 +34,11 @@ var questions = [
        }
 ];
 var questionCounter = 0;
-var timerCounter = 10;
+var timerCounter = 20;
+var timerId;
+var timerContentEl = document.querySelector("#counter");
+timerContentEl.textContent = "Time Remaining: " + timerCounter;
+var finalScore = 0;
 var gameContainerEl = document.querySelector("#game-container")
 var introContainerEl = document.querySelector("#intro-container")
 
@@ -62,38 +77,64 @@ var createAnswersEl = function() {
 
 }
 
+var gameButtonHandler = function(event) {
+    var targetEl = event.target;
 
+    if (targetEl.matches(".answer-button")) {
+        scoreAnswer(targetEl.getAttribute("data-answer-isCorrect"));
+    }
 
+    if (targetEl.matches(".start-button")) {
+        createQuizContainerEl();
+        setTimer();
+        console.log("timerID = " + timerId)
+    }
 
+}
 
+var scoreAnswer = function(isCorrect) {
+    if (isCorrect === "false"){
+        console.log("incorrect!");
+        timerCounter = Math.max(0, timerCounter-10);
+        clearInterval(timerId);
+        setTimer();
+    }
+    else {
+        console.log("correct!");
+    }
 
+    questionCounter++
+    if (questionCounter < questions.length) {
+        createQuizContainerEl();
+    }
+    else {
+        finalScore = timerCounter;
+        console.log("final score =" + finalScore)
+        clearInterval(timerId);
+        createResultsEl();
 
-
-var quizContentEl = document.querySelector("#start-quiz");
-var timerContentEl = document.querySelector("#counter");
-timerContentEl.textContent = "Time Remaining: " + counter
-
-var startQuizHandler = function() {
-    console.log("clicked the button!")
-    var countDownInterval = setInterval(countdown, 1000);
-    // need to work on how this countdown interval is handled
-    if (counter === 0) {
-        console.log("blastoff");
-        clearInterval(countDownInterval);
     }
 }
 
+var setTimer = function() {
+    timerId = setInterval(function() {
 
-var countdown = function() {
-    console.log(counter);
-    timerContentEl.textContent = "Time Remaining: " + counter
+        if (timerCounter<=0) {
+            clearInterval(timerId);
+            console.log("time expired");
+            createResultsEl();
+        }
+        else {
+            timerCounter--;
 
-    counter--;
+        }
+        timerContentEl.textContent = "Time Remaining: " + timerCounter;
+     }, 1000);
 
 }
 
-/// need to define the data structure of the questions
-    ///
-/// need to dynanmically generate quiz questions with buttons
 
-gameContainerEl.addEventListener("click", startQuizHandler);
+
+
+
+gameContainerEl.addEventListener("click", gameButtonHandler);
