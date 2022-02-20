@@ -33,6 +33,8 @@ var questions = [
                isCorrect: true}]
        }
 ];
+
+intro_text = "Cillum esse ipsum amet cupidatat et consectetur Lorem. Consequat cillum occaecat mollit eiusmod deserunt in culpa. Do aute cillum aliqua nisi cillum. Nostrud dolore aute pariatur ad. Aliqua ex in mollit consectetur deserunt anim pariatur et pariatur. Deserunt in labore aute nostrud commodo et duis culpa velit nisi qui duis id sint."
 var questionCounter = 0;
 var timerCounter = 20;
 var timerId;
@@ -40,13 +42,23 @@ var timerContentEl = document.querySelector("#counter");
 timerContentEl.textContent = "Time Remaining: " + timerCounter;
 var finalScore = 0;
 var gameContainerEl = document.querySelector("#game-container")
-var introContainerEl = document.querySelector("#intro-container")
+var scores = JSON.parse(localStorage.getItem("scores"));
 
-var createResultsEl = function() {
-    var resultsContainerEl = document.createElement("div");
-    resultsContainerEl.innerHTML = "<h3>This is results content</h3>";
-    gameContainerEl.replaceChildren(resultsContainerEl);
+
+var createIntroEl = function() {
+    var introEl = document.createElement("div");
+    introEl.className = "intro-container";
+    introEl.innerHTML = "<h2>Coding Quiz Challenge</h2>" + "<p>" + intro_text + "</p>"
+
+    startButtonEl = document.createElement("button");
+    startButtonEl.className = "start-button";
+    startButtonEl.textContent = "Start Quiz!"
+    introEl.appendChild(startButtonEl);
+
+    gameContainerEl.replaceChildren(introEl);
 }
+
+createIntroEl();
 
 var createQuizContainerEl = function() {
     var quizContainerEl = document.createElement("div");
@@ -77,6 +89,55 @@ var createAnswersEl = function() {
 
 }
 
+var createResultsEl = function() {
+    var resultsContainerEl = document.createElement("div");
+    resultsContainerEl.innerHTML = "<h3>All done!</h3>" + "<p>Your final score is: " + finalScore + "</p>";
+
+    if (scores.length < 10 | finalScore > scores[scores.length-1][1]) {
+
+        var initialsInputEl = document.createElement("input");
+        initialsInputEl.className = "initials-input";
+        resultsContainerEl.appendChild(initialsInputEl);
+
+
+        var submitScoreButton = document.createElement("button");
+        submitScoreButton.textContent = "Submit"
+        submitScoreButton.className = "score-submit-button"
+        resultsContainerEl.appendChild(submitScoreButton);
+    }
+
+    else {
+        var viewScoreButton = document.createElement("button");
+        viewScoreButton.textContent = "View High Scores";
+        viewScoreButton.className = "view-scores-button";
+        resultsContainerEl.appendChild;
+    }
+
+    gameContainerEl.replaceChildren(resultsContainerEl);
+}
+
+var createHighScoresEl = function() {
+    var HighScoresEl = document.createElement("div");
+    HighScoresEl.innerHTML = "<h2>Quiz High Scores:</h2>";
+
+    scoresListEl = document.createElement("ol");
+    for (i=0; i<scores.length; i++) {
+        listItemEl = document.createElement("li");
+        listItemEl.textContent = scores[i][0] + ": " + scores[i][1];
+        scoresListEl.appendChild(listItemEl);
+    }
+    HighScoresEl.appendChild(scoresListEl);
+
+    var restartButton = document.createElement("button");
+    restartButton.textContent = "Restart Game";
+    restartButton.className = "restart-button";
+    HighScoresEl.appendChild(restartButton);
+
+    gameContainerEl.replaceChildren(HighScoresEl);
+}
+
+
+
 var gameButtonHandler = function(event) {
     var targetEl = event.target;
 
@@ -89,6 +150,48 @@ var gameButtonHandler = function(event) {
         setTimer();
         console.log("timerID = " + timerId)
     }
+
+    if (targetEl.matches(".score-submit-button")){
+        initials = document.querySelector(".initials-input").value;
+        if (validateInitials(initials)){
+            updateScores(initials);
+            createHighScoresEl();
+            return false;
+        }
+        else {
+            window.alert("Initials must be less than 4 characters.")
+        }
+    }
+
+    if (targetEl.matches(".view-scores-button")) {
+        createHighScoresEl();
+    }
+
+    if (targetEl.matches(".restart-button")) {
+        questionCounter = 0;
+        timerCounter = 20;
+        createIntroEl();
+    }
+
+}
+
+var validateInitials = function(initials) {
+    return initials.length < 4 && initials.length > 0 && typeof(initials) === "string"
+}
+
+var updateScores = function(initials) {
+    if (scores.length < 10) {
+        scores.push([initials, finalScore]);
+        scores.sort(function(first, second) {return second[1] - first[1]});
+        localStorage.setItem("scores", JSON.stringify(scores))
+
+    }
+    else {
+        scores[scores.length - 1] = [initials, finalScore];
+        scores.sort(function(first, second) {return second[1] - first[1]});
+        localStorage.setItem("scores", JSON.stringify(scores))
+    }
+
 
 }
 
@@ -112,7 +215,6 @@ var scoreAnswer = function(isCorrect) {
         console.log("final score =" + finalScore)
         clearInterval(timerId);
         createResultsEl();
-
     }
 }
 
@@ -126,15 +228,10 @@ var setTimer = function() {
         }
         else {
             timerCounter--;
-
         }
         timerContentEl.textContent = "Time Remaining: " + timerCounter;
      }, 1000);
-
 }
-
-
-
 
 
 gameContainerEl.addEventListener("click", gameButtonHandler);
