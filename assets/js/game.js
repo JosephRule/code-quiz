@@ -10,40 +10,47 @@ var questions = [
         {answerText:"this answer is correct",
             isCorrect: true}]
     },
-    {questionText: "this is question #1",
+    {questionText: "this is question #2",
     answers: [
-       {answerText:"this answer is incorrect",
-           isCorrect: false},
+       {answerText:"this answer is correct",
+           isCorrect: true},
        {answerText:"this answer is also incorrect",
            isCorrect: false},
        {answerText:"this answer too is incorrect",
            isCorrect: false},
-       {answerText:"this answer is correct",
-           isCorrect: true}]
+       {answerText:"this answer is incorrect",
+           isCorrect: false}]
    },
-    {questionText: "What color is pongo?",
-        answers: [
-           {answerText:"purple",
-               isCorrect: false},
-           {answerText:"blue",
-               isCorrect: false},
-           {answerText:"green",
-               isCorrect: false},
-           {answerText:"black and white",
-               isCorrect: true}]
-       }
+    {questionText: "this is question #3",
+    answers: [
+        {answerText:"this answer is correct",
+           isCorrect: true},
+       {answerText:"this answer is also incorrect",
+           isCorrect: false},
+       {answerText:"this answer too is incorrect",
+           isCorrect: false},
+       {answerText:"this answer is incorrect",
+           isCorrect: false}]
+    }
 ];
 
 intro_text = "Cillum esse ipsum amet cupidatat et consectetur Lorem. Consequat cillum occaecat mollit eiusmod deserunt in culpa. Do aute cillum aliqua nisi cillum. Nostrud dolore aute pariatur ad. Aliqua ex in mollit consectetur deserunt anim pariatur et pariatur. Deserunt in labore aute nostrud commodo et duis culpa velit nisi qui duis id sint."
 var questionCounter = 0;
-var timerCounter = 20;
+var timerCounter = 40;
 var timerId;
 var timerContentEl = document.querySelector("#counter");
 timerContentEl.textContent = "Time Remaining: " + timerCounter;
 var finalScore = 0;
-var gameContainerEl = document.querySelector("#game-container")
-var scores = JSON.parse(localStorage.getItem("scores"));
+var gameContainerEl = document.querySelector("#game-container");
 
+var loadScores = function() {
+    if (localStorage.getItem("scores") === null ) {
+        return [];
+    }
+    else {
+        return JSON.parse(localStorage.getItem("scores"));
+    }
+}
 
 var createIntroEl = function() {
     var introEl = document.createElement("div");
@@ -57,8 +64,6 @@ var createIntroEl = function() {
 
     gameContainerEl.replaceChildren(introEl);
 }
-
-createIntroEl();
 
 var createQuizContainerEl = function() {
     var quizContainerEl = document.createElement("div");
@@ -93,8 +98,13 @@ var createResultsEl = function() {
     var resultsContainerEl = document.createElement("div");
     resultsContainerEl.innerHTML = "<h3>All done!</h3>" + "<p>Your final score is: " + finalScore + "</p>";
 
-    if (scores.length < 10 | finalScore > scores[scores.length-1][1]) {
-
+    if (finalScore <= 0 | finalScore <= scores[scores.length-1][1]) {
+        var viewScoreButton = document.createElement("button");
+        viewScoreButton.textContent = "View High Scores";
+        viewScoreButton.className = "view-scores-button";
+        resultsContainerEl.appendChild(viewScoreButton);
+    }
+    else {
         var initialsInputEl = document.createElement("input");
         initialsInputEl.className = "initials-input";
         resultsContainerEl.appendChild(initialsInputEl);
@@ -104,13 +114,6 @@ var createResultsEl = function() {
         submitScoreButton.textContent = "Submit"
         submitScoreButton.className = "score-submit-button"
         resultsContainerEl.appendChild(submitScoreButton);
-    }
-
-    else {
-        var viewScoreButton = document.createElement("button");
-        viewScoreButton.textContent = "View High Scores";
-        viewScoreButton.className = "view-scores-button";
-        resultsContainerEl.appendChild;
     }
 
     gameContainerEl.replaceChildren(resultsContainerEl);
@@ -137,6 +140,64 @@ var createHighScoresEl = function() {
 }
 
 
+
+
+var validateInitials = function(initials) {
+    return initials.length < 4 && initials.length > 0 && typeof(initials) === "string"
+}
+
+var updateScores = function(initials) {
+    if (scores.length < 10) {
+        scores.push([initials, finalScore]);
+        scores.sort(function(first, second) {return second[1] - first[1]});
+        localStorage.setItem("scores", JSON.stringify(scores))
+
+    }
+    else {
+        scores[scores.length - 1] = [initials, finalScore];
+        scores.sort(function(first, second) {return second[1] - first[1]});
+        localStorage.setItem("scores", JSON.stringify(scores))
+    }
+}
+
+var scoreAnswer = function(isCorrect) {
+    if (isCorrect === "false"){
+        console.log("incorrect!");
+        timerCounter = Math.max(0, timerCounter-10);
+        clearInterval(timerId);
+        setTimer();
+    }
+    else {
+        console.log("correct!");
+    }
+
+    questionCounter++
+    if (questionCounter < questions.length) {
+        createQuizContainerEl();
+    }
+    else {
+        finalScore = timerCounter;
+        console.log("final score =" + finalScore)
+        clearInterval(timerId);
+        createResultsEl();
+    }
+}
+
+var setTimer = function() {
+    timerId = setInterval(function() {
+
+        if (timerCounter<=0) {
+            finalScore = 0;
+            clearInterval(timerId);
+            console.log("time expired");
+            createResultsEl();
+        }
+        else {
+            timerCounter--;
+        }
+        timerContentEl.textContent = "Time Remaining: " + timerCounter;
+     }, 1000);
+}
 
 var gameButtonHandler = function(event) {
     var targetEl = event.target;
@@ -169,69 +230,13 @@ var gameButtonHandler = function(event) {
 
     if (targetEl.matches(".restart-button")) {
         questionCounter = 0;
-        timerCounter = 20;
+        timerCounter = 40;
         createIntroEl();
     }
 
 }
 
-var validateInitials = function(initials) {
-    return initials.length < 4 && initials.length > 0 && typeof(initials) === "string"
-}
 
-var updateScores = function(initials) {
-    if (scores.length < 10) {
-        scores.push([initials, finalScore]);
-        scores.sort(function(first, second) {return second[1] - first[1]});
-        localStorage.setItem("scores", JSON.stringify(scores))
-
-    }
-    else {
-        scores[scores.length - 1] = [initials, finalScore];
-        scores.sort(function(first, second) {return second[1] - first[1]});
-        localStorage.setItem("scores", JSON.stringify(scores))
-    }
-
-
-}
-
-var scoreAnswer = function(isCorrect) {
-    if (isCorrect === "false"){
-        console.log("incorrect!");
-        timerCounter = Math.max(0, timerCounter-10);
-        clearInterval(timerId);
-        setTimer();
-    }
-    else {
-        console.log("correct!");
-    }
-
-    questionCounter++
-    if (questionCounter < questions.length) {
-        createQuizContainerEl();
-    }
-    else {
-        finalScore = timerCounter;
-        console.log("final score =" + finalScore)
-        clearInterval(timerId);
-        createResultsEl();
-    }
-}
-
-var setTimer = function() {
-    timerId = setInterval(function() {
-
-        if (timerCounter<=0) {
-            clearInterval(timerId);
-            console.log("time expired");
-            createResultsEl();
-        }
-        else {
-            timerCounter--;
-        }
-        timerContentEl.textContent = "Time Remaining: " + timerCounter;
-     }, 1000);
-}
-
-
+scores = loadScores();
+createIntroEl();
 gameContainerEl.addEventListener("click", gameButtonHandler);
