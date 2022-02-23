@@ -98,7 +98,19 @@ var createResultsEl = function() {
     var resultsContainerEl = document.createElement("div");
     resultsContainerEl.innerHTML = "<h3>All done!</h3>" + "<p>Your final score is: " + finalScore + "</p>";
 
-    if (finalScore <= 0 | finalScore <= scores[scores.length-1][1]) {
+    if (scores.length === 0){
+        var initialsInputEl = document.createElement("input");
+        initialsInputEl.className = "initials-input";
+        resultsContainerEl.appendChild(initialsInputEl);
+
+
+        var submitScoreButton = document.createElement("button");
+        submitScoreButton.textContent = "Submit"
+        submitScoreButton.className = "score-submit-button"
+        resultsContainerEl.appendChild(submitScoreButton);
+    }
+
+    else if (finalScore <= 0 | finalScore <= scores[scores.length-1][1]) {
         var viewScoreButton = document.createElement("button");
         viewScoreButton.textContent = "View High Scores";
         viewScoreButton.className = "view-scores-button";
